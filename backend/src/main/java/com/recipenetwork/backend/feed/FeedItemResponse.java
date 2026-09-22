@@ -11,13 +11,15 @@ public record FeedItemResponse(
         Integer rating,
         String comment,
         OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
         boolean savedByCurrentUser) {
 
     public record RecipeSummary(Long id, String title, String imageUrl, String domain) {
     }
 
-    // savedByCurrentUser is always false until Etapp 4 (SavedRecipe) exists.
-    public static FeedItemResponse from(Review review) {
+    // Feed order/position is always by createdAt - editing a review does not bump it to
+    // the top. updatedAt is included so the frontend can show an "edited" indicator.
+    public static FeedItemResponse from(Review review, boolean savedByCurrentUser) {
         ExternalRecipe recipe = review.getRecipe();
         return new FeedItemResponse(
                 review.getId(),
@@ -26,6 +28,7 @@ public record FeedItemResponse(
                 review.getRating(),
                 review.getComment(),
                 review.getCreatedAt(),
-                false);
+                review.getUpdatedAt(),
+                savedByCurrentUser);
     }
 }
