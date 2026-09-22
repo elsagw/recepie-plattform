@@ -11,3 +11,16 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          # Defaults let the app start/build without real credentials (e.g. tests, CI).
+          # Real Google login requires GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET in .env.
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-client-secret}
+            scope: openid,email,profile
+
+app:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
