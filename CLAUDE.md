@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Etapp 0–4 from `docs/PROJECT_PLAN.md` are done: Flyway/datalager, Google OAuth2 auth (CORS/CSRF/global error handler), external-recipe scraping (JSoup, SSRF guard, OpenGraph/JSON-LD extraction), reviews/feed (multiple reviews per recipe, editing, pagination), and saved recipes (idempotent save, list, unsave; `savedByCurrentUser` wired into the feed). Etapp 5 (Vue frontend) onward has not been started. There is still no `frontend/` — do not assume a `package.json` or Vue project exists until Etapp 5 creates it.
 
-Etapp 4's save/unsave endpoints are compiled, unit-tested (via the shared patterns already proven in Etapp 2/3), and verified for the unauthenticated-access case (401/403 with the correct JSON shape) — but NOT yet verified end-to-end with a real logged-in session, because the Chrome browser tool lost its connection mid-session and reconnecting didn't fix it. If you're picking this up fresh: do a real-browser pass on save → list → unsave → feed's `savedByCurrentUser` toggling before trusting it fully.
+Etapp 4 has been fully verified end-to-end in a real browser session (save → idempotent re-save → list → unsave → idempotent re-unsave → `savedByCurrentUser` toggling true/false in the feed → 404 on saving a nonexistent recipe).
 
 ## What this is
 
