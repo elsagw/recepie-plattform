@@ -41,7 +41,7 @@ erDiagram
         bigint id PK
         bigint user_id FK
         bigint recipe_id FK
-        smallint rating
+        integer rating
         text comment
         timestamp created_at
         timestamp updated_at

@@ -32,6 +32,9 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ErrorResponse body = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", "Du måste vara inloggad.",
                 request.getRequestURI(), OffsetDateTime.now());
-        objectMapper.writeValue(response.getWriter(), body);
+        // Write to the byte stream, not response.getWriter() - the writer falls back to
+        // ISO-8859-1 unless something upstream already forced UTF-8, which silently
+        // mangles å/ä/ö. writeValue(OutputStream, ...) always writes UTF-8.
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
 }

@@ -23,16 +23,19 @@ public class SecurityConfig {
 
     private final String frontendOrigin;
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
+    private final ApiAccessDeniedHandler apiAccessDeniedHandler;
     private final CustomOidcUserService customOidcUserService;
     private final CsrfCookieFilter csrfCookieFilter;
 
     public SecurityConfig(
             @Value("${app.frontend-origin}") String frontendOrigin,
             ApiAuthenticationEntryPoint apiAuthenticationEntryPoint,
+            ApiAccessDeniedHandler apiAccessDeniedHandler,
             CustomOidcUserService customOidcUserService,
             CsrfCookieFilter csrfCookieFilter) {
         this.frontendOrigin = frontendOrigin;
         this.apiAuthenticationEntryPoint = apiAuthenticationEntryPoint;
+        this.apiAccessDeniedHandler = apiAccessDeniedHandler;
         this.customOidcUserService = customOidcUserService;
         this.csrfCookieFilter = csrfCookieFilter;
     }
@@ -52,8 +55,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/oauth2/**", "/login/**").permitAll()
                         .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
-                        apiAuthenticationEntryPoint, PathPatternRequestMatcher.pathPattern("/api/**")))
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                apiAuthenticationEntryPoint, PathPatternRequestMatcher.pathPattern("/api/**"))
+                        .defaultAccessDeniedHandlerFor(
+                                apiAccessDeniedHandler, PathPatternRequestMatcher.pathPattern("/api/**")))
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
                         .defaultSuccessUrl(frontendOrigin + "/feed", true))
