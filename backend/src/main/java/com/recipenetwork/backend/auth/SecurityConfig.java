@@ -23,17 +23,17 @@ public class SecurityConfig {
 
     private final String frontendOrigin;
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
-    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOidcUserService customOidcUserService;
     private final CsrfCookieFilter csrfCookieFilter;
 
     public SecurityConfig(
             @Value("${app.frontend-origin}") String frontendOrigin,
             ApiAuthenticationEntryPoint apiAuthenticationEntryPoint,
-            CustomOAuth2UserService customOAuth2UserService,
+            CustomOidcUserService customOidcUserService,
             CsrfCookieFilter csrfCookieFilter) {
         this.frontendOrigin = frontendOrigin;
         this.apiAuthenticationEntryPoint = apiAuthenticationEntryPoint;
-        this.customOAuth2UserService = customOAuth2UserService;
+        this.customOidcUserService = customOidcUserService;
         this.csrfCookieFilter = csrfCookieFilter;
     }
 
@@ -55,7 +55,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
                         apiAuthenticationEntryPoint, PathPatternRequestMatcher.pathPattern("/api/**")))
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
                         .defaultSuccessUrl(frontendOrigin + "/feed", true))
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
