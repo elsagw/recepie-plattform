@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ReviewService {
 
+    private static final int MAX_COMMENT_LENGTH = 2000;
+
     private final ReviewRepository reviewRepository;
     private final ExternalRecipeRepository externalRecipeRepository;
 
@@ -27,6 +29,7 @@ public class ReviewService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "recipeId saknas.");
         }
         int rating = validateRating(request.rating());
+        validateComment(request.comment());
 
         ExternalRecipe recipe = externalRecipeRepository.findById(request.recipeId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "RECIPE_NOT_FOUND", "Receptet hittades inte."));
@@ -38,6 +41,7 @@ public class ReviewService {
     @Transactional
     public ReviewResponse update(User user, Long reviewId, UpdateReviewRequest request) {
         int rating = validateRating(request.rating());
+        validateComment(request.comment());
 
         Review review = reviewRepository.findByIdAndUser_Id(reviewId, user.getId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "REVIEW_NOT_FOUND", "Recensionen hittades inte."));
@@ -60,5 +64,12 @@ public class ReviewService {
                     "Betyg måste vara ett heltal mellan 1 och 5.");
         }
         return rating;
+    }
+
+    private void validateComment(String comment) {
+        if (comment != null && comment.length() > MAX_COMMENT_LENGTH) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "COMMENT_TOO_LONG",
+                    "Kommentaren får vara högst " + MAX_COMMENT_LENGTH + " tecken.");
+        }
     }
 }
