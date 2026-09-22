@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Etapp 0–4 from `docs/PROJECT_PLAN.md` are done: Flyway/datalager, Google OAuth2 auth (CORS/CSRF/global error handler), external-recipe scraping (JSoup, SSRF guard, OpenGraph/JSON-LD extraction), reviews/feed (multiple reviews per recipe, editing, pagination), and saved recipes (idempotent save, list, unsave; `savedByCurrentUser` wired into the feed). Etapp 5 (Vue frontend) onward has not been started. There is still no `frontend/` — do not assume a `package.json` or Vue project exists until Etapp 5 creates it.
+Etapp 0–5 from `docs/PROJECT_PLAN.md` are done: backend (Flyway/datalager, Google OAuth2 auth, external-recipe scraping with SSRF guard, reviews/feed, saved recipes) and now the Vue 3 + TypeScript frontend (`frontend/`) covering the full flow: login, `/feed` with save/unsave, `/add-review` with scrape-preview and review history. Etapp 6 (testing/hardening) has not been started.
 
-Etapp 4 has been fully verified end-to-end in a real browser session (save → idempotent re-save → list → unsave → idempotent re-unsave → `savedByCurrentUser` toggling true/false in the feed → 404 on saving a nonexistent recipe).
+Etapp 5 has been fully verified end-to-end in a real browser: Google login, scrape-preview, viewing past reviews of a recipe before submitting a new one, star-rating input, publishing, the published review appearing correctly in the feed, save/unsave toggling, logout, the `/add-review` login-gate for anonymous users, and a backend error (SSRF block) rendering correctly in the UI.
 
 ## What this is
 
@@ -18,7 +18,8 @@ Etapp 4 has been fully verified end-to-end in a real browser session (save → i
 ## Stack
 
 - Backend (`backend/`, scaffolded): Spring Boot **4.1.1**, Java 21, **Maven**. Dependencies: `spring-boot-starter-webmvc`, `spring-boot-starter-data-jpa`, `spring-boot-starter-security-oauth2-client`, `spring-boot-starter-flyway`, `spring-boot-starter-validation`, PostgreSQL driver, `org.jsoup:jsoup`.
-- Frontend: Vue 3, **npm** (not pnpm/yarn) — not scaffolded yet, comes in Etapp 5.
+- Frontend (`frontend/`, scaffolded via `create-vue`): Vue 3, TypeScript, Vue Router, ESLint (+oxlint), Vitest. **No Pinia** — auth state is a module-level singleton in `composables/useAuth.ts`; the app is small enough that a store would be pure ceremony. **npm** (not pnpm/yarn).
+  - **Requires Node ^22.18.0**, unlike the rest of the stack (backend/tooling assumes Node 20). Use `nvm use` in `frontend/` (reads `.nvmrc`, pinned to `22.23.2`, already installed via nvm on this machine). Running `npm install`/`npm run *` under Node 20 will either fail outright or hit a confusing `npm error Cannot read properties of null (reading 'edgesOut')` from `@npmcli/arborist` — that specific error was actually an old-npm bug (fixed by `npm install -g npm@latest`), not a Node-version error, so don't assume Node is the only thing that can cause it.
 - Local Postgres via `docker-compose.yml`, mapped to host port **5433**, not 5432 (another, unrelated container already used 5432 on this machine — don't "fix" this back to 5432).
 
 ### Spring Boot 4 / Spring Security 7 breaking changes (bit us once already, don't relearn this)
@@ -55,6 +56,10 @@ Most Spring tutorials/docs online still describe Boot 3 / Security 6. This proje
 - `saved_recipes` mirrors the `RecipeScrapeService` concurrency pattern: `SavedRecipeService` catches `DataIntegrityViolationException` on the unique `(user_id, recipe_id)` constraint and returns the existing row instead of erroring, so two concurrent "save" clicks don't 500. `DELETE /api/recipes/{id}/save` is unconditionally idempotent (`204` whether or not it was saved) — don't add a 404-if-not-saved check.
 - `GET /api/feed`'s `savedByCurrentUser` is resolved via `CurrentUserResolver.resolveCurrentUser(principal)` (the non-throwing variant) — the feed endpoint is public/`permitAll`, so the principal may legitimately be null and must NOT trigger a 401.
 - All `/api/**` errors go through the shared JSON shape even when Spring Security's filter chain rejects a request before it reaches a controller — not just `GlobalExceptionHandler`. `ApiAuthenticationEntryPoint` covers anonymous 401s, `ApiAccessDeniedHandler` covers authenticated-but-denied cases (most commonly a missing/invalid CSRF token, which can surface as 401 or 403 depending on Spring Security's internal exception routing — both paths now return the same JSON shape regardless). Found by manually testing the CSRF-rejection path, not by the security-review agent.
+
+- Frontend: `POST /api/recipes/scrape` is a POST despite reading like a query lookup (it may write a new `ExternalRecipe` row) — always call it through `api.post`, never `api.get`, or the CSRF header won't be sent and Spring Security will reject it.
+- Frontend: every fetch goes through `src/api/client.ts`'s `api` object, which handles `credentials: 'include'` and the `X-XSRF-TOKEN` header for non-GET requests automatically. Don't call `fetch()` directly in a component — you'll silently lose CSRF handling and cross-origin cookies.
+- Frontend `/add-review` gates its *entire* view behind login (not just the publish step) — scraping itself requires auth per the backend's `POST /api/recipes/scrape` rule above, so there's no anonymous preview-then-login flow.
 
 ## Not in MVP scope
 
