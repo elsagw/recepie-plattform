@@ -62,7 +62,7 @@ erDiagram
 - Flera recensioner per `(user_id, recipe_id)` är tillåtna — varje recension är en egen post, ingen unik constraint på paret.
 - `(user_id, recipe_id)` är unik i `saved_recipe` — att spara ett recept är binärt, till skillnad från recensioner.
 - `created_at` sätts på serversidan.
-- Feedet använder `updated_at` för en ändrad recension eller `created_at` om produkten ska visa publiceringstid.
+- Feedets ordning och position styrs alltid av `created_at` — en redigerad recension hoppar inte upp till toppen (motverkar att recensioner "bumpas" synliga genom upprepad redigering). `updated_at` returneras separat i svaren så frontend kan visa en "redigerad"-indikator.
 
 ## Backendmoduler
 
@@ -215,6 +215,7 @@ Publikt läsflöde i MVP. Inloggning krävs för att skrapa recept, skapa/uppdat
       "rating": 4,
       "comment": "Jag bytte grädde mot kokosmjölk.",
       "createdAt": "2026-09-20T12:05:00Z",
+      "updatedAt": "2026-09-20T12:05:00Z",
       "savedByCurrentUser": false
     }
   ],
@@ -224,6 +225,8 @@ Publikt läsflöde i MVP. Inloggning krävs för att skrapa recept, skapa/uppdat
 }
 ```
 
+`updatedAt` skiljer sig från `createdAt` när recensionen redigerats. Feedets ordning och position styrs alltid av `createdAt` — en redigerad recension hoppar inte upp till toppen. `savedByCurrentUser` är `false` för en anonym besökare och reflekterar annars den inloggade användarens egna sparade recept.
+
 ### Spara recept
 
 `POST /api/recipes/{id}/save`
@@ -231,7 +234,26 @@ Publikt läsflöde i MVP. Inloggning krävs för att skrapa recept, skapa/uppdat
 - Kräver inloggning.
 - Returnerar `201 Created` första gången.
 - Returnerar idempotent `200 OK` om receptet redan är sparat.
-- Komplettera med `GET /api/saved-recipes` och `DELETE /api/recipes/{id}/save`.
+
+`GET /api/saved-recipes`
+
+- Kräver inloggning. Returnerar användarens sparade recept, senast sparade först.
+
+```json
+[
+  {
+    "recipeId": 12,
+    "title": "Exempelrecept",
+    "imageUrl": "https://cdn.example/image.jpg",
+    "domain": "ica.se",
+    "savedAt": "2026-09-20T12:05:00Z"
+  }
+]
+```
+
+`DELETE /api/recipes/{id}/save`
+
+- Kräver inloggning. Idempotent — `204 No Content` oavsett om receptet var sparat eller inte.
 
 ## Scrapingflöde
 

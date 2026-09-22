@@ -1,6 +1,7 @@
 package com.recipenetwork.backend.auth;
 
 import com.recipenetwork.backend.common.ApiException;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
@@ -27,5 +28,14 @@ public class CurrentUserResolver {
         String oauthSubject = principal.getAttribute("sub");
         return userRepository.findByOauthSubject(oauthSubject)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Du måste vara inloggad."));
+    }
+
+    /** Non-throwing variant for endpoints that behave differently for logged-in vs. anonymous callers (the feed). */
+    public Optional<User> resolveCurrentUser(OAuth2User principal) {
+        if (principal == null) {
+            return Optional.empty();
+        }
+        String oauthSubject = principal.getAttribute("sub");
+        return userRepository.findByOauthSubject(oauthSubject);
     }
 }
