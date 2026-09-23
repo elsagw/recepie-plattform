@@ -10,6 +10,8 @@ const router = useRouter()
 const route = useRoute()
 const { currentUser, login } = useAuth()
 
+const MAX_COMMENT_LENGTH = 2000
+
 const url = ref('')
 const recipe = ref<ExternalRecipe | null>(null)
 const myReviews = ref<MyReview[]>([])
@@ -151,7 +153,10 @@ onMounted(() => {
         </div>
         <div class="field">
           <label for="comment">Kommentar (valfritt)</label>
-          <textarea id="comment" v-model="comment" rows="4" maxlength="2000"></textarea>
+          <textarea id="comment" v-model="comment" rows="4" :maxlength="MAX_COMMENT_LENGTH"></textarea>
+          <p class="char-count" :class="{ limit: comment.length >= MAX_COMMENT_LENGTH }">
+            {{ comment.length }} / {{ MAX_COMMENT_LENGTH }} tecken
+          </p>
         </div>
         <div class="field">
           <label for="image">Egen bild på receptet (valfritt)</label>
@@ -317,6 +322,19 @@ h1 {
   font-size: 0.8rem;
   opacity: 0.6;
   margin: 0.3rem 0 0;
+}
+
+.char-count {
+  font-size: 0.78rem;
+  color: var(--color-text);
+  opacity: 0.55;
+  text-align: right;
+  margin: 0.3rem 0 0;
+}
+
+.char-count.limit {
+  color: var(--color-danger);
+  opacity: 1;
 }
 
 .image-preview {
