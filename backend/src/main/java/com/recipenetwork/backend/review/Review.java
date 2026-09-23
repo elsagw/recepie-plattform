@@ -39,6 +39,9 @@ public class Review {
     @Column
     private String comment;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -63,6 +66,10 @@ public class Review {
         this.updatedAt = now;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public Long getId() {
         return id;
     }
@@ -81,6 +88,10 @@ public class Review {
 
     public String getComment() {
         return comment;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public OffsetDateTime getCreatedAt() {

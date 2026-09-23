@@ -2,6 +2,7 @@ package com.recipenetwork.backend.review;
 
 import com.recipenetwork.backend.auth.User;
 import com.recipenetwork.backend.common.ApiException;
+import com.recipenetwork.backend.common.ImageStorageService;
 import com.recipenetwork.backend.recipe.ExternalRecipe;
 import com.recipenetwork.backend.recipe.ExternalRecipeRepository;
 import java.time.OffsetDateTime;
@@ -9,6 +10,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ReviewService {
@@ -17,10 +19,15 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ExternalRecipeRepository externalRecipeRepository;
+    private final ImageStorageService imageStorageService;
 
-    public ReviewService(ReviewRepository reviewRepository, ExternalRecipeRepository externalRecipeRepository) {
+    public ReviewService(
+            ReviewRepository reviewRepository,
+            ExternalRecipeRepository externalRecipeRepository,
+            ImageStorageService imageStorageService) {
         this.reviewRepository = reviewRepository;
         this.externalRecipeRepository = externalRecipeRepository;
+        this.imageStorageService = imageStorageService;
     }
 
     @Transactional
@@ -47,6 +54,16 @@ public class ReviewService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "REVIEW_NOT_FOUND", "Recensionen hittades inte."));
 
         review.update(rating, request.comment(), OffsetDateTime.now());
+        return ReviewResponse.from(review);
+    }
+
+    @Transactional
+    public ReviewResponse setImage(User user, Long reviewId, MultipartFile image) {
+        Review review = reviewRepository.findByIdAndUser_Id(reviewId, user.getId())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "REVIEW_NOT_FOUND", "Recensionen hittades inte."));
+
+        String storedPath = imageStorageService.store(image);
+        review.setImageUrl(storedPath);
         return ReviewResponse.from(review);
     }
 

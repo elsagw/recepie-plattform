@@ -11,6 +11,10 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   security:
     oauth2:
       client:
@@ -24,3 +28,4 @@ spring:
 
 app:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  uploads-dir: ${UPLOADS_DIR:./uploads}

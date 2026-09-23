@@ -28,6 +28,7 @@ export interface Review {
   recipeId: number
   rating: number
   comment: string | null
+  imageUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -43,6 +44,7 @@ export interface FeedItem {
   }
   rating: number
   comment: string | null
+  imageUrl: string | null
   createdAt: string
   updatedAt: string
   savedByCurrentUser: boolean
@@ -61,6 +63,12 @@ export interface SavedRecipe {
   imageUrl: string | null
   domain: string
   savedAt: string
+}
+
+export interface Friend {
+  userId: number
+  displayName: string
+  addedAt: string
 }
 
 export interface ApiErrorBody {
