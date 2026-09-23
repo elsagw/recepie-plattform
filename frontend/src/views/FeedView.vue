@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { api, ApiError } from '@/api/client'
+import { api, ApiError, resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
 import type { FeedItem, FeedPage } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
@@ -10,7 +10,7 @@ const { currentUser } = useAuth()
 
 const items = ref<FeedItem[]>([])
 const page = ref(0)
-const size = ref(20)
+const size = ref(21)
 const totalElements = ref(0)
 const isLoading = ref(true)
 const loadError = ref<string | null>(null)
@@ -76,35 +76,30 @@ onMounted(() => loadFeed(0))
       Inga recensioner än. <RouterLink to="/add-review">Bli den första att recensera ett recept.</RouterLink>
     </p>
 
-    <ul v-else class="feed-list">
-      <li v-for="item in items" :key="item.reviewId" class="card">
-        <div class="thumb" :class="{ placeholder: !item.recipe.imageUrl }">
-          <img v-if="item.recipe.imageUrl" :src="item.recipe.imageUrl" :alt="item.recipe.title ?? ''" />
+    <ul v-else class="feed-grid">
+      <li v-for="item in items" :key="item.reviewId" class="tile">
+        <div class="thumb" :class="{ placeholder: !item.imageUrl }">
+          <img v-if="item.imageUrl" :src="resolveImageUrl(item.imageUrl) ?? ''" :alt="item.recipe.title ?? ''" />
           <span v-else>{{ item.recipe.domain }}</span>
-        </div>
-        <div class="content">
-          <div class="title-row">
-            <strong>{{ item.recipe.title ?? 'Recept utan titel' }}</strong>
-            <span class="domain">{{ item.recipe.domain }}</span>
-          </div>
-          <StarRating :model-value="item.rating" />
-          <p v-if="item.comment" class="comment">{{ item.comment }}</p>
-          <div class="meta-row">
-            <span>{{ item.username }}</span>
-            <span>·</span>
-            <span>{{ formatDate(item.createdAt) }}</span>
-            <span v-if="item.updatedAt !== item.createdAt">(redigerad)</span>
+          <div class="rating-badge">
+            <StarRating :model-value="item.rating" size="sm" />
           </div>
           <button
             v-if="currentUser"
             type="button"
-            class="save-button"
+            class="save-badge"
             :class="{ saved: item.savedByCurrentUser }"
             :disabled="savePendingFor === item.recipe.id"
+            :title="item.savedByCurrentUser ? 'Sparad' : 'Spara till min lista'"
             @click="toggleSave(item)"
           >
-            {{ item.savedByCurrentUser ? '✓ Sparad' : '+ Spara till min lista' }}
+            {{ item.savedByCurrentUser ? '✓' : '+' }}
           </button>
+        </div>
+        <div class="tile-info">
+          <strong class="title">{{ item.recipe.title ?? 'Recept utan titel' }}</strong>
+          <div class="meta">{{ item.username }} · {{ formatDate(item.createdAt) }}</div>
+          <p v-if="item.comment" class="comment">{{ item.comment }}</p>
         </div>
       </li>
     </ul>
@@ -132,27 +127,25 @@ h1 {
   color: var(--color-danger);
 }
 
-.feed-list {
+.feed-grid {
   list-style: none;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.25rem;
 }
 
-.card {
+.tile {
   display: flex;
-  gap: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1rem;
+  flex-direction: column;
 }
 
 .thumb {
-  flex-shrink: 0;
-  width: 96px;
-  height: 96px;
-  border-radius: 6px;
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--color-background-mute);
 }
@@ -161,6 +154,7 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .thumb.placeholder {
@@ -168,59 +162,67 @@ h1 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 0.75rem;
-  padding: 0.25rem;
+  font-size: 0.8rem;
+  padding: 0.5rem;
   color: var(--color-text);
   opacity: 0.6;
 }
 
-.content {
-  flex: 1;
-  min-width: 0;
+.rating-badge {
+  position: absolute;
+  left: 0.4rem;
+  bottom: 0.4rem;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 5px;
+  padding: 0.15rem 0.4rem;
 }
 
-.title-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.domain {
-  font-size: 0.8rem;
-  opacity: 0.6;
-  white-space: nowrap;
-}
-
-.comment {
-  margin: 0.4rem 0;
-}
-
-.meta-row {
-  display: flex;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
-
-.save-button {
-  margin-top: 0.5rem;
-  background: none;
-  border: 1px solid var(--color-accent);
-  color: var(--color-accent);
-  border-radius: 6px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.85rem;
+.save-badge {
+  position: absolute;
+  right: 0.4rem;
+  top: 0.4rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  font-size: 1rem;
+  line-height: 1;
   cursor: pointer;
 }
 
-.save-button.saved {
-  background: var(--color-accent-soft);
+.save-badge.saved {
+  background: var(--color-accent);
 }
 
-.save-button:disabled {
+.save-badge:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.tile-info {
+  padding: 0.5rem 0.1rem;
+}
+
+.title {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.meta {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  margin: 0.15rem 0;
+}
+
+.comment {
+  font-size: 0.85rem;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .pagination {
@@ -228,6 +230,6 @@ h1 {
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 </style>

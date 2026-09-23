@@ -12,6 +12,8 @@ const { currentUser, isLoading, login, logout } = useAuth()
       <nav>
         <RouterLink to="/feed">Feed</RouterLink>
         <RouterLink v-if="currentUser" to="/add-review">Recensera</RouterLink>
+        <RouterLink v-if="currentUser" to="/sparat">Sparat</RouterLink>
+        <RouterLink v-if="currentUser" to="/kompisar">Kompisar</RouterLink>
       </nav>
       <div class="auth">
         <template v-if="isLoading">

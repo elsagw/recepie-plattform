@@ -17,6 +17,16 @@ const router = createRouter({
       name: 'add-review',
       component: () => import('../views/AddReviewView.vue'),
     },
+    {
+      path: '/sparat',
+      name: 'saved',
+      component: () => import('../views/SavedView.vue'),
+    },
+    {
+      path: '/kompisar',
+      name: 'friends',
+      component: () => import('../views/FriendsView.vue'),
+    },
   ],
 })
 

@@ -62,9 +62,48 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return json as T
 }
 
+async function requestForm<T>(path: string, formData: FormData): Promise<T> {
+  const headers: Record<string, string> = {}
+  const csrfToken = readCookie('XSRF-TOKEN')
+  if (csrfToken) {
+    headers['X-XSRF-TOKEN'] = csrfToken
+  }
+  // No Content-Type header here - the browser must set it itself (with the multipart
+  // boundary) when the body is a FormData, or the upload won't parse on the server.
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: formData,
+  })
+
+  const text = await response.text()
+  const json = text ? (JSON.parse(text) as unknown) : null
+
+  if (!response.ok) {
+    const errorBody = json as ApiErrorBody | null
+    throw new ApiError(
+      response.status,
+      errorBody?.code ?? 'UNKNOWN_ERROR',
+      errorBody?.message ?? 'Något gick fel. Försök igen.',
+      errorBody,
+    )
+  }
+
+  return json as T
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
   put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
   delete: <T>(path: string) => request<T>('DELETE', path),
+  postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
+}
+
+/** Resolves a possibly-relative image path (e.g. "/uploads/xyz.jpg") against the API host. */
+export function resolveImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  return url.startsWith('/') ? `${API_BASE_URL}${url}` : url
 }

@@ -5,8 +5,9 @@ const props = withDefaults(
   defineProps<{
     modelValue: number
     interactive?: boolean
+    size?: 'sm' | 'md'
   }>(),
-  { interactive: false },
+  { interactive: false, size: 'md' },
 )
 
 const emit = defineEmits<{
@@ -25,7 +26,7 @@ function select(value: number) {
 <template>
   <span
     class="star-rating"
-    :class="{ interactive }"
+    :class="[{ interactive }, size]"
     role="img"
     :aria-label="`Betyg: ${modelValue} av 5 stjärnor`"
   >
@@ -72,5 +73,9 @@ function select(value: number) {
 
 .star-rating.interactive .star:hover {
   transform: scale(1.1);
+}
+
+.star-rating.sm .star {
+  font-size: 0.85rem;
 }
 </style>

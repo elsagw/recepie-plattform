@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { api, ApiError } from '@/api/client'
+import { api, ApiError, resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
 import type { ExternalRecipe, MyReview, Review } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
@@ -14,12 +14,23 @@ const recipe = ref<ExternalRecipe | null>(null)
 const myReviews = ref<MyReview[]>([])
 const rating = ref(0)
 const comment = ref('')
+const imageFile = ref<File | null>(null)
+const imagePreviewUrl = ref<string | null>(null)
 
 const isScraping = ref(false)
 const scrapeError = ref<string | null>(null)
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
 const published = ref<Review | null>(null)
+
+function onImageSelected(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0] ?? null
+  if (imagePreviewUrl.value) {
+    URL.revokeObjectURL(imagePreviewUrl.value)
+  }
+  imageFile.value = file
+  imagePreviewUrl.value = file ? URL.createObjectURL(file) : null
+}
 
 async function scrapeUrl() {
   if (!url.value.trim()) return
@@ -53,11 +64,19 @@ async function publish() {
   isSubmitting.value = true
   submitError.value = null
   try {
-    published.value = await api.post<Review>('/api/reviews', {
+    const created = await api.post<Review>('/api/reviews', {
       recipeId: recipe.value.id,
       rating: rating.value,
       comment: comment.value.trim() || null,
     })
+
+    if (imageFile.value) {
+      const formData = new FormData()
+      formData.append('image', imageFile.value)
+      published.value = await api.postForm<Review>(`/api/reviews/${created.reviewId}/image`, formData)
+    } else {
+      published.value = created
+    }
   } catch (error) {
     submitError.value = error instanceof ApiError ? error.message : 'Kunde inte publicera recensionen.'
   } finally {
@@ -71,6 +90,11 @@ function reviewAnother() {
   myReviews.value = []
   rating.value = 0
   comment.value = ''
+  if (imagePreviewUrl.value) {
+    URL.revokeObjectURL(imagePreviewUrl.value)
+  }
+  imageFile.value = null
+  imagePreviewUrl.value = null
   published.value = null
   submitError.value = null
 }
@@ -92,6 +116,9 @@ function goToFeed() {
     <template v-else-if="published">
       <div class="state success">
         <p>Din recension är publicerad!</p>
+      </div>
+      <div v-if="published.imageUrl" class="published-image">
+        <img :src="resolveImageUrl(published.imageUrl) ?? ''" alt="" />
       </div>
       <div class="actions">
         <button type="button" @click="goToFeed">Till feedet</button>
@@ -120,7 +147,7 @@ function goToFeed() {
 
       <div v-if="recipe" class="preview">
         <div class="thumb" :class="{ placeholder: !recipe.imageUrl }">
-          <img v-if="recipe.imageUrl" :src="recipe.imageUrl" :alt="recipe.title ?? ''" />
+          <img v-if="recipe.imageUrl" :src="resolveImageUrl(recipe.imageUrl) ?? ''" :alt="recipe.title ?? ''" />
           <span v-else>{{ recipe.domain }}</span>
         </div>
         <div>
@@ -147,6 +174,12 @@ function goToFeed() {
         <div class="field">
           <label for="comment">Kommentar (valfritt)</label>
           <textarea id="comment" v-model="comment" rows="4" maxlength="2000"></textarea>
+        </div>
+        <div class="field">
+          <label for="image">Egen bild på receptet (valfritt)</label>
+          <input id="image" type="file" accept="image/*" @change="onImageSelected" />
+          <p class="hint">Har du ingen egen bild används receptets bild istället.</p>
+          <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="" class="image-preview" />
         </div>
         <p v-if="submitError" class="state error">{{ submitError }}</p>
         <button type="submit" :disabled="rating < 1 || isSubmitting">
@@ -311,5 +344,32 @@ h1 {
 .actions {
   display: flex;
   gap: 0.75rem;
+}
+
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin: 0.3rem 0 0;
+}
+
+.image-preview {
+  margin-top: 0.6rem;
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.published-image {
+  margin-bottom: 1rem;
+}
+
+.published-image img {
+  max-width: 280px;
+  max-height: 280px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
 }
 </style>
