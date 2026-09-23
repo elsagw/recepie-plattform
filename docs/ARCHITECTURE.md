@@ -198,7 +198,7 @@ Svar `400` används för ogiltig URL eller metadata som inte kan användas. Svar
 
 `GET /api/feed?page=0&size=20`
 
-Publikt läsflöde i MVP. Inloggning krävs för att skrapa recept, skapa/uppdatera recensioner och spara recept.
+Kräver inloggning (`401` utan session) — liksom att skrapa recept, skapa/uppdatera recensioner och spara recept. En utloggad besökare möts av en inloggningssida i frontend istället för feedet.
 
 ```json
 {
@@ -225,7 +225,7 @@ Publikt läsflöde i MVP. Inloggning krävs för att skrapa recept, skapa/uppdat
 }
 ```
 
-`updatedAt` skiljer sig från `createdAt` när recensionen redigerats. Feedets ordning och position styrs alltid av `createdAt` — en redigerad recension hoppar inte upp till toppen. `savedByCurrentUser` är `false` för en anonym besökare och reflekterar annars den inloggade användarens egna sparade recept.
+`updatedAt` skiljer sig från `createdAt` när recensionen redigerats. Feedets ordning och position styrs alltid av `createdAt` — en redigerad recension hoppar inte upp till toppen. `savedByCurrentUser` reflekterar den inloggade användarens egna sparade recept (endpointen kräver inloggning, så principalen är alltid satt när den nås).
 
 ### Spara recept
 
@@ -290,8 +290,8 @@ Alla HTTP/HTTPS-domäner tillåts i MVP:n. Scrapern validerar den uppslagna IP-a
 
 ## Behörighet
 
-- Anonym användare: läsa feed och externa receptmetadata.
-- Inloggad användare (via Google OAuth2): skrapa recept, skapa/uppdatera egna recensioner och spara/ta bort recept.
+- Anonym användare: bara `/api/auth/**` och OAuth2-inloggningsflödet — möts av en inloggningssida i frontend istället för feedet. Feedet är inte längre publikt läsbart (ändrat från den ursprungliga MVP-modellen, för en tryggare känsla).
+- Inloggad användare (via Google OAuth2): läsa feed och externa receptmetadata, skrapa recept, skapa/uppdatera egna recensioner och spara/ta bort recept.
 - En användare kan skriva flera recensioner för samma externa recept (t.ex. vid upprepad tillagning). Tidigare recensioner av samma recept visas som referens innan en ny skrivs, och varje recension kan redigeras individuellt via sitt eget id.
 - Interna användarskapade recept finns inte i MVP:n. Om de införs senare krävs `InternalRecipe` eller en gemensam `RecipeTarget` med ägarskap; då ska ägaren inte kunna recensera sitt eget recept enligt produktregeln.
 
@@ -320,7 +320,7 @@ Alla HTTP/HTTPS-domäner tillåts i MVP:n. Scrapern validerar den uppslagna IP-a
 
 ## Beslutade MVP-regler
 
-- Feedet är publikt; skrapning, recensioner och sparade recept kräver inloggning via Google OAuth2.
+- Feedet, skrapning, recensioner och sparade recept kräver alla inloggning via Google OAuth2 — en utloggad besökare ser en inloggningssida, inte feedet.
 - `POST /api/reviews` skapar alltid en ny recension (`201 Created`) — flera recensioner per user/recept är tillåtna.
 - `PUT /api/reviews/{reviewId}` uppdaterar en specifik egen recension.
 - Rating är 1–5 stjärnor.
