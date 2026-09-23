@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,5 +57,18 @@ public class ReviewController {
     public List<MyReviewResponse> mine(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long recipeId) {
         User user = currentUserResolver.requireCurrentUser(principal);
         return reviewService.findMyReviews(user, recipeId);
+    }
+
+    @GetMapping("/api/reviews/{reviewId}")
+    public ReviewDetailResponse get(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long reviewId) {
+        User user = currentUserResolver.requireCurrentUser(principal);
+        return reviewService.getDetail(reviewId, user.getId());
+    }
+
+    @DeleteMapping("/api/reviews/{reviewId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long reviewId) {
+        User user = currentUserResolver.requireCurrentUser(principal);
+        reviewService.delete(user, reviewId);
     }
 }

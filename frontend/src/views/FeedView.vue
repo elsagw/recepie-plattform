@@ -53,15 +53,6 @@ const totalElements = ref(0)
 const isLoading = ref(true)
 const loadError = ref<string | null>(null)
 const savePendingFor = ref<number | null>(null)
-const expandedIds = ref(new Set<number>())
-
-function toggleExpanded(reviewId: number) {
-  if (expandedIds.value.has(reviewId)) {
-    expandedIds.value.delete(reviewId)
-  } else {
-    expandedIds.value.add(reviewId)
-  }
-}
 
 async function loadFeed(targetPage: number) {
   isLoading.value = true
@@ -209,8 +200,10 @@ watch(
     <ul v-else class="feed-grid">
       <li v-for="item in items" :key="item.reviewId" class="card">
         <div class="photo" :class="{ placeholder: !item.imageUrl }">
-          <img v-if="item.imageUrl" :src="resolveImageUrl(item.imageUrl) ?? ''" :alt="item.recipe.title ?? ''" />
-          <span v-else class="photo-fallback">{{ item.recipe.domain }}</span>
+          <RouterLink :to="`/recension/${item.reviewId}`" class="photo-link">
+            <img v-if="item.imageUrl" :src="resolveImageUrl(item.imageUrl) ?? ''" :alt="item.recipe.title ?? ''" />
+            <span v-else class="photo-fallback">{{ item.recipe.domain }}</span>
+          </RouterLink>
           <div class="rating-chip">
             <StarRating :model-value="item.rating" size="sm" />
           </div>
@@ -230,21 +223,11 @@ watch(
             </svg>
           </button>
         </div>
-        <div class="card-body">
+        <RouterLink :to="`/recension/${item.reviewId}`" class="card-body">
           <h2 class="title">{{ item.recipe.title ?? 'Recept utan titel' }}</h2>
           <p class="byline">{{ item.username }} · <time :datetime="item.createdAt">{{ formatDate(item.createdAt) }}</time></p>
-          <p v-if="item.comment" class="comment" :class="{ expanded: expandedIds.has(item.reviewId) }">
-            {{ item.comment }}
-          </p>
-          <button
-            v-if="item.comment && item.comment.length > 140"
-            type="button"
-            class="read-more"
-            @click="toggleExpanded(item.reviewId)"
-          >
-            {{ expandedIds.has(item.reviewId) ? 'Visa mindre' : 'Läs mer' }}
-          </button>
-        </div>
+          <p v-if="item.comment" class="comment">{{ item.comment }}</p>
+        </RouterLink>
       </li>
     </ul>
 
@@ -471,6 +454,14 @@ h1 {
   border: 1px solid var(--color-border);
 }
 
+.photo-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
 .photo img {
   width: 100%;
   height: 100%;
@@ -488,7 +479,7 @@ h1 {
   }
 }
 
-.photo.placeholder {
+.photo.placeholder .photo-link {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -537,8 +528,16 @@ h1 {
   cursor: default;
 }
 
+.card-body,
+.card-body:hover,
+.photo-link:hover {
+  text-decoration: none;
+}
+
 .card-body {
+  display: block;
   padding-top: 0.85rem;
+  color: inherit;
 }
 
 .title {
@@ -569,22 +568,6 @@ h1 {
   overflow: hidden;
 }
 
-.comment.expanded {
-  -webkit-line-clamp: unset;
-  overflow: visible;
-}
-
-.read-more {
-  display: block;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-top: 0.35rem;
-  font-size: 0.8rem;
-  color: var(--color-accent);
-  text-decoration: underline;
-  cursor: pointer;
-}
 
 .pagination {
   display: flex;
