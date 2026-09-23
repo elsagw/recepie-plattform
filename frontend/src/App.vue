@@ -2,18 +2,18 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 
-const { currentUser, isLoading, login, logout } = useAuth()
+const { currentUser, isLoading, logout } = useAuth()
 </script>
 
 <template>
   <header>
     <div class="bar">
       <RouterLink to="/feed" class="brand">receptfeed</RouterLink>
-      <nav>
+      <nav v-if="currentUser">
         <RouterLink to="/feed">Feed</RouterLink>
-        <RouterLink v-if="currentUser" to="/add-review">Recensera</RouterLink>
-        <RouterLink v-if="currentUser" to="/sparat">Sparat</RouterLink>
-        <RouterLink v-if="currentUser" to="/kompisar">Kompisar</RouterLink>
+        <RouterLink to="/add-review">Recensera</RouterLink>
+        <RouterLink to="/sparat">Sparat</RouterLink>
+        <RouterLink to="/kompisar">Kompisar</RouterLink>
       </nav>
       <div class="auth">
         <template v-if="isLoading">
@@ -22,9 +22,6 @@ const { currentUser, isLoading, login, logout } = useAuth()
         <template v-else-if="currentUser">
           <span class="muted">{{ currentUser.displayName }}</span>
           <button type="button" class="link-button" @click="logout">Logga ut</button>
-        </template>
-        <template v-else>
-          <button type="button" class="login-button" @click="login">Logga in med Google</button>
         </template>
       </div>
     </div>
@@ -75,15 +72,6 @@ nav a.router-link-active {
   color: var(--color-text);
   opacity: 0.7;
   font-size: 0.9rem;
-}
-
-.login-button {
-  background: var(--color-accent);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem 0.9rem;
-  cursor: pointer;
 }
 
 .link-button {

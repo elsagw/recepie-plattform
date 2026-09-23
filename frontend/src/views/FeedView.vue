@@ -8,6 +8,44 @@ import StarRating from '@/components/StarRating.vue'
 
 const { currentUser, isLoading: authLoading, login } = useAuth()
 
+const currentYear = new Date().getFullYear()
+
+const steps = [
+  {
+    title: 'Klistra in en länk',
+    text: 'Hitta ett recept du har testat och klistra in länken till det.',
+  },
+  {
+    title: 'Betygsätt och skriv en rad',
+    text: 'Ge det 1–5 stjärnor och berätta kort hur det blev.',
+  },
+  {
+    title: 'Se det i feedet',
+    text: 'Bläddra bland andras recensioner och spara sånt du vill laga själv.',
+  },
+]
+
+const previewSamples = [
+  {
+    title: 'Pannkakor',
+    author: 'Maja · igår',
+    rating: 5,
+    comment: 'Perfekta till söndagsfrukost, körde med havremjölk istället.',
+  },
+  {
+    title: 'Kycklinggryta med kokos',
+    author: 'Erik · 3 dagar sedan',
+    rating: 4,
+    comment: 'Enkel vardagsmat, barnen åt allt utan gnäll.',
+  },
+  {
+    title: 'Pasta carbonara',
+    author: 'Sara · 1 vecka sedan',
+    rating: 5,
+    comment: 'Klassiker som aldrig sviker, blev perfekt krämig.',
+  },
+]
+
 const items = ref<FeedItem[]>([])
 const page = ref(0)
 const size = ref(21)
@@ -107,8 +145,42 @@ watch(
         </svg>
         Logga in med Google
       </button>
-      <p class="fineprint">Du loggar in med ditt Google-konto — inget nytt lösenord att hålla reda på.</p>
     </div>
+
+    <div class="how-it-works">
+      <h2>Så funkar det</h2>
+      <ol class="steps">
+        <li v-for="(step, index) in steps" :key="step.title">
+          <span class="step-number">{{ index + 1 }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.text }}</p>
+        </li>
+      </ol>
+    </div>
+
+    <div class="preview">
+      <h2>Ett smakprov av feedet</h2>
+      <ul class="feed-grid">
+        <li v-for="sample in previewSamples" :key="sample.title" class="card">
+          <div class="photo sample">
+            <span class="sample-label">{{ sample.title }}</span>
+            <div class="rating-chip">
+              <StarRating :model-value="sample.rating" size="sm" />
+            </div>
+          </div>
+          <div class="card-body">
+            <h3 class="title">{{ sample.title }}</h3>
+            <p class="byline">{{ sample.author }}</p>
+            <p class="comment">{{ sample.comment }}</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <footer class="landing-footer">
+      <span class="brand">receptfeed</span>
+      <span class="copyright">© {{ currentYear }}</span>
+    </footer>
   </section>
 
   <section v-else>
@@ -180,7 +252,8 @@ h1 {
 
 .landing {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 4rem 0 3rem;
 }
 
@@ -227,11 +300,92 @@ h1 {
   border-color: var(--color-border-hover);
 }
 
-.fineprint {
-  font-size: 0.78rem;
-  color: var(--color-text);
-  opacity: 0.55;
+.how-it-works,
+.preview {
+  width: 100%;
+  margin-top: 4.5rem;
+}
+
+.how-it-works h2,
+.preview h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  text-align: center;
+  color: var(--color-heading);
+  margin: 0 0 2rem;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
   margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.steps li {
+  text-align: center;
+}
+
+.step-number {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.75rem;
+  color: var(--color-accent);
+  margin-bottom: 0.4rem;
+}
+
+.steps h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-heading);
+  margin: 0 0 0.4rem;
+}
+
+.steps p {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  opacity: 0.75;
+  max-width: 26ch;
+  margin: 0 auto;
+}
+
+.photo.sample {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--color-accent-soft), var(--color-background-mute));
+}
+
+.sample-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--color-heading);
+  opacity: 0.8;
+}
+
+.landing-footer {
+  width: 100%;
+  margin-top: 4.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  opacity: 0.6;
+}
+
+.landing-footer .brand {
+  font-weight: 700;
 }
 
 .state {
