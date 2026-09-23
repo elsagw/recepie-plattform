@@ -261,7 +261,9 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1.35rem;
+  min-height: 80vh;
   max-width: 32rem;
   text-align: center;
 }
@@ -303,7 +305,7 @@ h1 {
 .how-it-works,
 .preview {
   width: 100%;
-  margin-top: 4.5rem;
+  margin-top: 8rem;
 }
 
 .how-it-works h2,
@@ -373,7 +375,7 @@ h1 {
 
 .landing-footer {
   width: 100%;
-  margin-top: 4.5rem;
+  margin-top: 8rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--color-border);
   display: flex;
