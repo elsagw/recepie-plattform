@@ -5,6 +5,7 @@ import { api, ApiError, resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
 import type { FeedItem, FeedPage } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const { currentUser, isLoading: authLoading, login } = useAuth()
 
@@ -109,7 +110,7 @@ watch(
 
 <template>
   <section v-if="authLoading" class="auth-check">
-    <p class="state">Laddar …</p>
+    <div class="state"><LoadingSpinner /></div>
   </section>
 
   <section v-else-if="!currentUser" class="landing">
@@ -183,10 +184,8 @@ watch(
     </footer>
   </section>
 
-  <section v-else>
-    <h1>Feed</h1>
-
-    <p v-if="isLoading" class="state">Laddar feed …</p>
+  <section v-else class="feed">
+    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -225,7 +224,16 @@ watch(
         </div>
         <RouterLink :to="`/recension/${item.reviewId}`" class="card-body">
           <h2 class="title">{{ item.recipe.title ?? 'Recept utan titel' }}</h2>
-          <p class="byline">{{ item.username }} · <time :datetime="item.createdAt">{{ formatDate(item.createdAt) }}</time></p>
+          <div class="byline">
+            <span class="byline-avatar">
+              <img v-if="item.userAvatarUrl" :src="resolveImageUrl(item.userAvatarUrl) ?? ''" alt="" />
+              <svg v-else viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" />
+              </svg>
+            </span>
+            {{ item.username }} · <time :datetime="item.createdAt">{{ formatDate(item.createdAt) }}</time>
+          </div>
           <p v-if="item.comment" class="comment">{{ item.comment }}</p>
         </RouterLink>
       </li>
@@ -251,6 +259,10 @@ h1 {
   letter-spacing: -0.01em;
   color: var(--color-heading);
   margin-bottom: 2rem;
+}
+
+.feed {
+  padding-top: 1.5rem;
 }
 
 .auth-check {
@@ -550,10 +562,33 @@ h1 {
 }
 
 .byline {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.8rem;
   color: var(--color-text);
   opacity: 0.65;
   margin: 0 0 0.55rem;
+}
+
+.byline-avatar {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-background-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9a9a9a;
+}
+
+.byline-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .comment {

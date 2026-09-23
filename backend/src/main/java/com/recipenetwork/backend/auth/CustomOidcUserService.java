@@ -32,9 +32,16 @@ public class CustomOidcUserService extends OidcUserService {
         String oauthSubject = oidcUser.getAttribute("sub");
         String email = oidcUser.getAttribute("email");
         String displayName = oidcUser.getAttribute("name");
+        String picture = oidcUser.getAttribute("picture");
 
-        userRepository.findByOauthSubject(oauthSubject)
-                .orElseGet(() -> userRepository.save(new User(oauthSubject, email, displayName)));
+        // Only seeds avatarUrl from Google's profile picture on first provisioning - once a
+        // user has an avatar (whether that initial Google picture or a later custom upload),
+        // later logins never silently overwrite it.
+        userRepository.findByOauthSubject(oauthSubject).orElseGet(() -> {
+            User created = new User(oauthSubject, email, displayName);
+            created.setAvatarUrl(picture);
+            return userRepository.save(created);
+        });
 
         return oidcUser;
     }

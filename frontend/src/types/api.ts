@@ -4,6 +4,7 @@ export interface CurrentUser {
   id: number
   email: string
   displayName: string
+  avatarUrl: string | null
 }
 
 export interface ExternalRecipe {
@@ -36,6 +37,7 @@ export interface Review {
 export interface FeedItem {
   reviewId: number
   username: string
+  userAvatarUrl: string | null
   recipe: {
     id: number
     title: string | null
@@ -60,6 +62,7 @@ export interface FeedPage {
 export interface ReviewDetail {
   reviewId: number
   username: string
+  userAvatarUrl: string | null
   recipe: {
     id: number
     title: string | null
@@ -86,6 +89,7 @@ export interface SavedRecipe {
 export interface Friend {
   userId: number
   displayName: string
+  avatarUrl: string | null
   addedAt: string
 }
 

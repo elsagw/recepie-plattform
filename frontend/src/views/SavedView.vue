@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api, ApiError, resolveImageUrl } from '@/api/client'
 import type { SavedRecipe } from '@/types/api'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const items = ref<SavedRecipe[]>([])
 const isLoading = ref(true)
@@ -44,7 +45,7 @@ onMounted(load)
   <section>
     <h1>Ska laga</h1>
 
-    <p v-if="isLoading" class="state">Laddar …</p>
+    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>

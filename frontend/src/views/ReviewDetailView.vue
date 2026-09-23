@@ -4,6 +4,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { api, ApiError, resolveImageUrl } from '@/api/client'
 import type { Review, ReviewDetail } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -94,9 +95,14 @@ onMounted(load)
 
 <template>
   <section class="narrow">
-    <RouterLink to="/feed" class="back-link">← Till feedet</RouterLink>
+    <RouterLink to="/feed" class="back-link" title="Till feedet" aria-label="Till feedet">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5" />
+        <path d="M11 18l-6-6 6-6" />
+      </svg>
+    </RouterLink>
 
-    <p v-if="isLoading" class="state">Laddar …</p>
+    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -115,6 +121,13 @@ onMounted(load)
       <div class="meta-row">
         <StarRating :model-value="review.rating" />
         <p class="byline">
+          <span class="byline-avatar">
+            <img v-if="review.userAvatarUrl" :src="resolveImageUrl(review.userAvatarUrl) ?? ''" alt="" />
+            <svg v-else viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" />
+            </svg>
+          </span>
           {{ review.username }} · <time :datetime="review.createdAt">{{ formatDate(review.createdAt) }}</time>
           <span v-if="review.updatedAt !== review.createdAt"> · redigerad</span>
         </p>
@@ -178,11 +191,20 @@ onMounted(load)
 
 <style scoped>
 .back-link {
-  display: inline-block;
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
   color: var(--color-text);
-  opacity: 0.7;
+  text-decoration: none;
   margin-bottom: 1.5rem;
+}
+
+.back-link:hover {
+  background: var(--color-background-mute);
+  text-decoration: none;
 }
 
 .state {
@@ -265,10 +287,33 @@ h1 {
 }
 
 .byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.85rem;
   color: var(--color-text);
   opacity: 0.7;
   margin: 0;
+}
+
+.byline-avatar {
+  flex-shrink: 0;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-background-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9a9a9a;
+}
+
+.byline-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .comment {

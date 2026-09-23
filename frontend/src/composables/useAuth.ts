@@ -32,10 +32,15 @@ async function logout() {
   currentUser.value = null
 }
 
+/** Lets a view apply a fresh CurrentUser (e.g. after a profile/avatar update) without a round-trip to /api/auth/me. */
+function setCurrentUser(user: CurrentUser) {
+  currentUser.value = user
+}
+
 export function useAuth() {
   if (!initialized) {
     initialized = true
     void fetchCurrentUser()
   }
-  return { currentUser, isLoading, login, logout, refresh: fetchCurrentUser }
+  return { currentUser, isLoading, login, logout, refresh: fetchCurrentUser, setCurrentUser }
 }
