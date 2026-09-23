@@ -7,9 +7,9 @@ Bygg en social receptplattform där användare kan klistra in en extern receptl�
 ## MVP-scope
 
 - Publika externa recept från URL.
-- Feedet är publikt och kan läsas utan konto.
+- Feedet kräver inloggning för att läsas — en utloggad besökare möts av en inloggningssida (hero + "Logga in med Google") istället för feedet. (Ändrat efter MVP:ns ursprungliga beslut om ett publikt feed, för en tryggare känsla.)
 - Inloggning sker endast via Google OAuth2 — inget lokalt lösenord finns i MVP:n.
-- Inloggning krävs för att skrapa (förhandsgranska) recept, skriva recensioner och spara recept.
+- Inloggning krävs för att läsa feedet, skrapa (förhandsgranska) recept, skriva recensioner och spara recept.
 - En användare kan skriva flera recensioner av samma externa recept över tid (t.ex. om receptet lagas igen). Varje recension är en egen post och kan redigeras individuellt. Tidigare recensioner av samma recept visas som referens innan en ny recension skrivs.
 - Recensioner använder ett heltalsbetyg från 1 till 5 stjärnor.
 - Feedet visar de senaste recensionerna.
