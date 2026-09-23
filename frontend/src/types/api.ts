@@ -62,6 +62,7 @@ export interface SavedRecipe {
   title: string | null
   imageUrl: string | null
   domain: string
+  sourceUrl: string
   savedAt: string
 }
 
