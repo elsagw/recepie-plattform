@@ -18,6 +18,11 @@ const router = createRouter({
       component: () => import('../views/AddReviewView.vue'),
     },
     {
+      path: '/recension/:id',
+      name: 'review-detail',
+      component: () => import('../views/ReviewDetailView.vue'),
+    },
+    {
       path: '/sparat',
       name: 'saved',
       component: () => import('../views/SavedView.vue'),

@@ -75,6 +75,21 @@ public class ReviewService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public ReviewDetailResponse getDetail(Long reviewId, Long currentUserId) {
+        Review review = reviewRepository.findByIdWithDetails(reviewId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "REVIEW_NOT_FOUND", "Recensionen hittades inte."));
+        boolean ownedByCurrentUser = review.getUser().getId().equals(currentUserId);
+        return ReviewDetailResponse.from(review, ownedByCurrentUser);
+    }
+
+    @Transactional
+    public void delete(User user, Long reviewId) {
+        Review review = reviewRepository.findByIdAndUser_Id(reviewId, user.getId())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "REVIEW_NOT_FOUND", "Recensionen hittades inte."));
+        reviewRepository.delete(review);
+    }
+
     private int validateRating(Integer rating) {
         if (rating == null || rating < 1 || rating > 5) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_RATING",

@@ -57,6 +57,23 @@ export interface FeedPage {
   totalElements: number
 }
 
+export interface ReviewDetail {
+  reviewId: number
+  username: string
+  recipe: {
+    id: number
+    title: string | null
+    imageUrl: string | null
+    domain: string
+  }
+  rating: number
+  comment: string | null
+  imageUrl: string | null
+  createdAt: string
+  updatedAt: string
+  ownedByCurrentUser: boolean
+}
+
 export interface SavedRecipe {
   recipeId: number
   title: string | null
