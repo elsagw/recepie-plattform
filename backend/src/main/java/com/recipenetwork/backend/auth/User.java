@@ -24,6 +24,9 @@ public class User {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     protected User() {
     }
 
@@ -31,6 +34,15 @@ public class User {
         this.oauthSubject = oauthSubject;
         this.email = email;
         this.displayName = displayName;
+    }
+
+    public void updateProfile(String displayName, String email) {
+        this.displayName = displayName;
+        this.email = email;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Long getId() {
@@ -47,5 +59,9 @@ public class User {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
     }
 }

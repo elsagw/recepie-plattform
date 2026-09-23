@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 public record ReviewDetailResponse(
         Long reviewId,
         String username,
+        String userAvatarUrl,
         RecipeSummary recipe,
         Integer rating,
         String comment,
@@ -25,6 +26,7 @@ public record ReviewDetailResponse(
         return new ReviewDetailResponse(
                 review.getId(),
                 review.getUser().getDisplayName(),
+                review.getUser().getAvatarUrl(),
                 new RecipeSummary(recipe.getId(), recipe.getTitle(), recipe.getImageUrl(), recipe.getDomain()),
                 review.getRating(),
                 review.getComment(),

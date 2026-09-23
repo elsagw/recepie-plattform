@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { api, ApiError } from '@/api/client'
 import type { Friend } from '@/types/api'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const friends = ref<Friend[]>([])
 const isLoading = ref(true)
@@ -77,7 +78,7 @@ onMounted(load)
       <p v-if="addSuccess" class="state success">{{ addSuccess }}</p>
     </form>
 
-    <p v-if="isLoading" class="state">Laddar …</p>
+    <div v-if="isLoading" class="state loading"><LoadingSpinner /></div>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -151,6 +152,10 @@ h1 {
 
 .state {
   padding: 1rem 0;
+}
+
+.state.loading {
+  text-align: center;
 }
 
 .state.error {

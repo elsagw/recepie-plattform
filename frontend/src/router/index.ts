@@ -32,6 +32,16 @@ const router = createRouter({
       name: 'friends',
       component: () => import('../views/FriendsView.vue'),
     },
+    {
+      path: '/konto',
+      name: 'account',
+      component: () => import('../views/AccountView.vue'),
+    },
+    {
+      path: '/hjalp',
+      name: 'help',
+      component: () => import('../views/HelpView.vue'),
+    },
   ],
 })
 
