@@ -504,7 +504,7 @@ h1 {
 }
 
 .save-button.saved {
-  background: var(--color-accent);
+  background: var(--color-secondary);
 }
 
 .save-button:disabled {

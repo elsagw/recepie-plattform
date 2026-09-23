@@ -29,16 +29,21 @@ skill; use both together when doing anything visually significant.
 - Design tokens are CSS custom properties defined in `src/assets/base.css` and `src/assets/main.css`:
   `--color-background`, `--color-background-soft`, `--color-background-mute`, `--color-border`,
   `--color-border-hover`, `--color-heading`, `--color-text`, `--color-accent`,
-  `--color-accent-soft`, `--color-danger`, `--color-star-filled`, `--color-star-empty`. Reuse these
-  instead of hardcoding new colors; add a new token to `main.css` if a genuinely new semantic color
-  is needed, rather than inlining a hex value in a component.
+  `--color-accent-soft`, `--color-secondary`, `--color-danger`, `--color-star-filled`,
+  `--color-star-empty`. Reuse these instead of hardcoding new colors; add a new token to `main.css`
+  if a genuinely new semantic color is needed, rather than inlining a hex value in a component.
 - Dark mode is handled via `@media (prefers-color-scheme: dark)` redefining those same tokens in
   `base.css`/`main.css` — there's no manual light/dark toggle. Any new color must be added to both
   the `:root` block and the dark-mode block.
-- Current palette is still close to the unmodified `create-vue` scaffold default (the green accent
-  `hsla(160, 100%, 30%, 1)` is the Vue starter color). If the user asks to make the UI feel more
-  distinctive/designed rather than "default Vue app," that's a legitimate, expected direction —
-  don't assume the current palette is intentional brand identity worth preserving as-is.
+- Deliberate warm, food-inspired palette (chosen for "mysigt" — cozy — over the original unmodified
+  `create-vue` scaffold green): cream/espresso backgrounds (`--rf-cream*`/`--rf-espresso*` primitives
+  in `base.css`), a terracotta/paprika primary (`--color-accent`, `#b5502e` light / `#cb6b44` dark),
+  a herb-green secondary (`--color-secondary`, `#4a6741` light / `#6e9160` dark) reserved for
+  confirmation/positive states (saved badge, success messages) rather than primary CTAs, and the
+  existing gold star color (`--color-star-filled`, unchanged) used only for ratings. Dark-mode accent/
+  secondary/danger values are deliberately *lighter* than their light-mode counterparts, not the same
+  value — a single shade can't hit good contrast both as text-on-dark-background and as
+  white-text-on-filled-button at once, so don't "simplify" by reusing the light-mode hex in dark mode.
 
 ## UI state pattern used in every view (follow it, don't reinvent)
 

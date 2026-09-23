@@ -158,7 +158,7 @@ h1 {
 }
 
 .state.success {
-  color: var(--color-accent);
+  color: var(--color-secondary);
 }
 
 .friend-list {
