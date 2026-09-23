@@ -53,6 +53,15 @@ const totalElements = ref(0)
 const isLoading = ref(true)
 const loadError = ref<string | null>(null)
 const savePendingFor = ref<number | null>(null)
+const expandedIds = ref(new Set<number>())
+
+function toggleExpanded(reviewId: number) {
+  if (expandedIds.value.has(reviewId)) {
+    expandedIds.value.delete(reviewId)
+  } else {
+    expandedIds.value.add(reviewId)
+  }
+}
 
 async function loadFeed(targetPage: number) {
   isLoading.value = true
@@ -207,19 +216,34 @@ watch(
           </div>
           <button
             type="button"
-            class="save-button"
+            class="like-button"
             :class="{ saved: item.savedByCurrentUser }"
             :disabled="savePendingFor === item.recipe.id"
             :title="item.savedByCurrentUser ? 'Sparad' : 'Spara till min lista'"
+            :aria-label="item.savedByCurrentUser ? 'Sparad, klicka för att ta bort' : 'Spara till min lista'"
             @click="toggleSave(item)"
           >
-            {{ item.savedByCurrentUser ? '✓' : '+' }}
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 21s-6.716-4.35-9.428-8.03C.688 10.4 1.03 6.9 3.64 5.2 5.94 3.7 8.8 4.3 10.4 6.2L12 8.1l1.6-1.9c1.6-1.9 4.46-2.5 6.76-1 2.61 1.7 2.95 5.2 1.07 7.77C18.72 16.65 12 21 12 21z"
+              />
+            </svg>
           </button>
         </div>
         <div class="card-body">
           <h2 class="title">{{ item.recipe.title ?? 'Recept utan titel' }}</h2>
           <p class="byline">{{ item.username }} · <time :datetime="item.createdAt">{{ formatDate(item.createdAt) }}</time></p>
-          <p v-if="item.comment" class="comment">{{ item.comment }}</p>
+          <p v-if="item.comment" class="comment" :class="{ expanded: expandedIds.has(item.reviewId) }">
+            {{ item.comment }}
+          </p>
+          <button
+            v-if="item.comment && item.comment.length > 140"
+            type="button"
+            class="read-more"
+            @click="toggleExpanded(item.reviewId)"
+          >
+            {{ expandedIds.has(item.reviewId) ? 'Visa mindre' : 'Läs mer' }}
+          </button>
         </div>
       </li>
     </ul>
@@ -488,26 +512,27 @@ h1 {
   line-height: 1;
 }
 
-.save-button {
+.like-button {
   position: absolute;
   right: 0.5rem;
-  top: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 50%;
   border: none;
   background: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 1rem;
-  line-height: 1;
+  color: rgba(255, 255, 255, 0.55);
   cursor: pointer;
 }
 
-.save-button.saved {
-  background: var(--color-secondary);
+.like-button.saved {
+  color: var(--color-danger);
 }
 
-.save-button:disabled {
+.like-button:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -542,6 +567,23 @@ h1 {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.comment.expanded {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.read-more {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .pagination {
