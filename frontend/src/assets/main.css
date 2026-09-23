@@ -1,17 +1,31 @@
 @import './base.css';
 
 :root {
-  --color-star-empty: #d8d8d8;
+  --color-star-empty: #ded2bc;
   --color-star-filled: #f5a623;
-  --color-accent: hsla(160, 100%, 30%, 1);
-  --color-accent-soft: hsla(160, 100%, 37%, 0.12);
-  --color-danger: #c0392b;
+
+  /* primary: terracotta/paprika - main CTAs, links, active states */
+  --color-accent: #b5502e;
+  --color-accent-soft: rgba(181, 80, 46, 0.12);
+
+  /* secondary: herb green - confirmation/positive states (saved, success) */
+  --color-secondary: #4a6741;
+
+  --color-danger: #9c3b34;
+
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-star-empty: #444444;
+    --color-star-empty: #4a4030;
+
+    --color-accent: #cb6b44;
+    --color-accent-soft: rgba(203, 107, 68, 0.18);
+
+    --color-secondary: #6e9160;
+
+    --color-danger: #d06056;
   }
 }
 
