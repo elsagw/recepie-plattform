@@ -57,21 +57,40 @@ onMounted(load)
 
     <ul v-else class="grid">
       <li v-for="item in items" :key="item.recipeId" class="tile">
-        <div class="thumb" :class="{ placeholder: !item.imageUrl }">
+        <a
+          :href="item.sourceUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="thumb"
+          :class="{ placeholder: !item.imageUrl }"
+        >
           <img v-if="item.imageUrl" :src="resolveImageUrl(item.imageUrl) ?? ''" :alt="item.title ?? ''" />
           <span v-else>{{ item.domain }}</span>
-        </div>
+        </a>
         <div class="tile-info">
           <strong class="title">{{ item.title ?? 'Recept utan titel' }}</strong>
           <div class="meta">{{ item.domain }} · sparad {{ formatDate(item.savedAt) }}</div>
-          <button
-            type="button"
-            class="remove-button"
-            :disabled="removePendingFor === item.recipeId"
-            @click="remove(item.recipeId)"
-          >
-            Ta bort
-          </button>
+          <div class="tile-actions">
+            <RouterLink :to="{ path: '/add-review', query: { url: item.sourceUrl } }" class="review-button">
+              Recensera
+            </RouterLink>
+            <button
+              type="button"
+              class="delete-button"
+              :disabled="removePendingFor === item.recipeId"
+              title="Ta bort från Ska laga-listan"
+              aria-label="Ta bort från Ska laga-listan"
+              @click="remove(item.recipeId)"
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+              </svg>
+            </button>
+          </div>
         </div>
       </li>
     </ul>
@@ -108,6 +127,7 @@ h1 {
 }
 
 .thumb {
+  display: block;
   aspect-ratio: 1;
   width: 100%;
   border-radius: 8px;
@@ -147,17 +167,46 @@ h1 {
   margin: 0.15rem 0 0.5rem;
 }
 
-.remove-button {
+.tile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-button {
   background: none;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 0.25rem 0.6rem;
   font-size: 0.8rem;
+  color: var(--color-text);
+}
+
+.review-button:hover {
+  border-color: var(--color-border-hover);
+  text-decoration: none;
+}
+
+.delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-danger);
+  color: white;
   cursor: pointer;
 }
 
-.remove-button:disabled {
-  opacity: 0.6;
+.delete-button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.delete-button:disabled {
+  opacity: 0.5;
   cursor: default;
 }
 </style>

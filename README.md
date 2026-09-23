@@ -32,7 +32,9 @@ Postgres körs på port **5433** (inte standard 5432).
 
 ```sh
 cd backend
-export $(cat ../.env | xargs)   # eller sätt miljövariablerna på annat sätt
+set -a
+source ../.env   # eller sätt miljövariablerna på annat sätt
+set +a
 ./mvnw spring-boot:run
 ```
 

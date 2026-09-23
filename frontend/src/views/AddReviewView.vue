@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { api, ApiError, resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
 import type { ExternalRecipe, MyReview, Review } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { currentUser, login } = useAuth()
 
 const url = ref('')
@@ -21,7 +22,6 @@ const isScraping = ref(false)
 const scrapeError = ref<string | null>(null)
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
-const published = ref<Review | null>(null)
 
 function onImageSelected(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0] ?? null
@@ -73,10 +73,10 @@ async function publish() {
     if (imageFile.value) {
       const formData = new FormData()
       formData.append('image', imageFile.value)
-      published.value = await api.postForm<Review>(`/api/reviews/${created.reviewId}/image`, formData)
-    } else {
-      published.value = created
+      await api.postForm<Review>(`/api/reviews/${created.reviewId}/image`, formData)
     }
+
+    router.push('/feed')
   } catch (error) {
     submitError.value = error instanceof ApiError ? error.message : 'Kunde inte publicera recensionen.'
   } finally {
@@ -84,24 +84,15 @@ async function publish() {
   }
 }
 
-function reviewAnother() {
-  url.value = ''
-  recipe.value = null
-  myReviews.value = []
-  rating.value = 0
-  comment.value = ''
-  if (imagePreviewUrl.value) {
-    URL.revokeObjectURL(imagePreviewUrl.value)
+onMounted(() => {
+  const queryUrl = route.query.url
+  if (typeof queryUrl === 'string' && queryUrl) {
+    url.value = queryUrl
+    if (currentUser.value) {
+      scrapeUrl()
+    }
   }
-  imageFile.value = null
-  imagePreviewUrl.value = null
-  published.value = null
-  submitError.value = null
-}
-
-function goToFeed() {
-  router.push('/feed')
-}
+})
 </script>
 
 <template>
@@ -112,19 +103,6 @@ function goToFeed() {
       <p>Du måste vara inloggad för att förhandsgranska och recensera recept.</p>
       <button type="button" class="login-button" @click="login">Logga in med Google</button>
     </div>
-
-    <template v-else-if="published">
-      <div class="state success">
-        <p>Din recension är publicerad!</p>
-      </div>
-      <div v-if="published.imageUrl" class="published-image">
-        <img :src="resolveImageUrl(published.imageUrl) ?? ''" alt="" />
-      </div>
-      <div class="actions">
-        <button type="button" @click="goToFeed">Till feedet</button>
-        <button type="button" @click="reviewAnother">Recensera ett till recept</button>
-      </div>
-    </template>
 
     <template v-else>
       <form class="url-form" @submit.prevent="scrapeUrl">
@@ -203,11 +181,6 @@ h1 {
   color: var(--color-danger);
 }
 
-.state.success {
-  color: var(--color-accent);
-  font-weight: 600;
-}
-
 .login-button {
   background: var(--color-accent);
   color: white;
@@ -245,8 +218,7 @@ h1 {
 }
 
 .url-row button,
-.review-form button,
-.actions button {
+.review-form button {
   background: var(--color-accent);
   color: white;
   border: none;
@@ -341,11 +313,6 @@ h1 {
   resize: vertical;
 }
 
-.actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
 .hint {
   font-size: 0.8rem;
   opacity: 0.6;
@@ -356,18 +323,6 @@ h1 {
   margin-top: 0.6rem;
   max-width: 200px;
   max-height: 200px;
-  border-radius: 8px;
-  object-fit: cover;
-  display: block;
-}
-
-.published-image {
-  margin-bottom: 1rem;
-}
-
-.published-image img {
-  max-width: 280px;
-  max-height: 280px;
   border-radius: 8px;
   object-fit: cover;
   display: block;
