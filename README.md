@@ -74,3 +74,9 @@ cd frontend && npm run type-check  # TypeScript
 
 Lägg till:
 spara rescept som man vill testa i framtiden? som ingen har lagt ut
+vänförfrågningar
+när man har klickat på någons recesion, texten.
+man ska bara kunna se sina kompisars recensioner, inte allas
+lägg till footer
+centrera plustecknet/gör det tydlgiare ui med att man kan skapa en recesion
+gör "receseringensdelen" snyggare. 

@@ -6,10 +6,9 @@ import { useAuth } from '@/composables/useAuth'
 import type { FeedItem, FeedPage } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import Skeleton from '@/components/LoadingSkeleton.vue'
 
 const { currentUser, isLoading: authLoading, login } = useAuth()
-
-const currentYear = new Date().getFullYear()
 
 const steps = [
   {
@@ -177,15 +176,20 @@ watch(
         </li>
       </ul>
     </div>
-
-    <footer class="landing-footer">
-      <span class="brand">receptfeed</span>
-      <span class="copyright">© {{ currentYear }}</span>
-    </footer>
   </section>
 
   <section v-else class="feed">
-    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
+    <ul v-if="isLoading" class="feed-grid" aria-hidden="true">
+      <li v-for="n in 6" :key="n" class="card">
+        <Skeleton class="skeleton-photo" />
+        <div class="card-body">
+          <Skeleton class="skeleton-title" />
+          <Skeleton class="skeleton-byline" />
+          <Skeleton class="skeleton-line" />
+          <Skeleton class="skeleton-line short" />
+        </div>
+      </li>
+    </ul>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -215,7 +219,8 @@ watch(
             :aria-label="item.savedByCurrentUser ? 'Sparad, klicka för att ta bort' : 'Spara till min lista'"
             @click="toggleSave(item)"
           >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+            <LoadingSpinner v-if="savePendingFor === item.recipe.id" size="sm" />
+            <svg v-else viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
               <path
                 d="M12 21s-6.716-4.35-9.428-8.03C.688 10.4 1.03 6.9 3.64 5.2 5.94 3.7 8.8 4.3 10.4 6.2L12 8.1l1.6-1.9c1.6-1.9 4.46-2.5 6.76-1 2.61 1.7 2.95 5.2 1.07 7.77C18.72 16.65 12 21 12 21z"
               />
@@ -239,12 +244,12 @@ watch(
       </li>
     </ul>
 
-    <div v-if="!isLoading && !loadError && items.length > 0" class="pagination">
-      <button type="button" class="btn-outline" :disabled="page === 0" @click="loadFeed(page - 1)">
+    <div v-if="!isLoading && !loadError && items.length > 0 && totalElements > size" class="pagination">
+      <button v-if="page > 0" type="button" class="btn-outline" @click="loadFeed(page - 1)">
         Föregående
       </button>
       <span class="page-indicator">Sida {{ page + 1 }}</span>
-      <button type="button" class="btn-outline" :disabled="!hasNextPage()" @click="loadFeed(page + 1)">
+      <button v-if="hasNextPage()" type="button" class="btn-outline" @click="loadFeed(page + 1)">
         Nästa
       </button>
     </div>
@@ -390,23 +395,6 @@ h1 {
   text-align: center;
   color: var(--color-heading);
   opacity: 0.8;
-}
-
-.landing-footer {
-  width: 100%;
-  margin-top: 8rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-  color: var(--color-text);
-  opacity: 0.6;
-}
-
-.landing-footer .brand {
-  font-weight: 700;
 }
 
 .state {
@@ -603,6 +591,35 @@ h1 {
   overflow: hidden;
 }
 
+
+.skeleton-photo {
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.skeleton-title {
+  height: 1.05rem;
+  width: 70%;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-byline {
+  height: 0.8rem;
+  width: 45%;
+  margin-bottom: 0.55rem;
+}
+
+.skeleton-line {
+  height: 0.85rem;
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+
+.skeleton-line.short {
+  width: 60%;
+  margin-bottom: 0;
+}
 
 .pagination {
   display: flex;

@@ -3,10 +3,10 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const router = useRouter()
-const { currentUser, isLoading, logout } = useAuth()
+const { currentUser, logout } = useAuth()
+const currentYear = new Date().getFullYear()
 
 const menuOpen = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
@@ -45,9 +45,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
         </RouterLink>
       </nav>
 
-      <LoadingSpinner v-if="isLoading" size="sm" />
-
-      <div v-else-if="currentUser" ref="menuRef" class="profile">
+      <div v-if="currentUser" ref="menuRef" class="profile">
         <button
           type="button"
           class="profile-trigger"
@@ -88,6 +86,11 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   <main>
     <RouterView />
   </main>
+
+  <footer class="site-footer">
+    <span class="footer-brand">receptfeed</span>
+    <span class="copyright">© {{ currentYear }}</span>
+  </footer>
 </template>
 
 <style scoped>
@@ -223,5 +226,21 @@ nav a.router-link-active {
   padding-top: 0.55rem;
   border-top: 1px solid var(--color-border);
   border-radius: 0 0 6px 6px;
+}
+
+.site-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  opacity: 0.6;
+}
+
+.footer-brand {
+  font-weight: 700;
 }
 </style>

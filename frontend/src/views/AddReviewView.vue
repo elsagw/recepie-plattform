@@ -5,6 +5,7 @@ import { api, ApiError, resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
 import type { ExternalRecipe, MyReview, Review } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -118,6 +119,7 @@ onMounted(() => {
             required
           />
           <button type="submit" :disabled="isScraping">
+            <LoadingSpinner v-if="isScraping" size="sm" />
             {{ isScraping ? 'Hämtar …' : 'Förhandsgranska' }}
           </button>
         </div>
@@ -166,6 +168,7 @@ onMounted(() => {
         </div>
         <p v-if="submitError" class="state error">{{ submitError }}</p>
         <button type="submit" :disabled="rating < 1 || isSubmitting">
+          <LoadingSpinner v-if="isSubmitting" size="sm" />
           {{ isSubmitting ? 'Publicerar …' : 'Publicera recension' }}
         </button>
       </form>
@@ -224,6 +227,9 @@ h1 {
 
 .url-row button,
 .review-form button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: var(--color-accent);
   color: white;
   border: none;
