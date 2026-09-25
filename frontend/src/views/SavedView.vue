@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { api, ApiError, resolveImageUrl } from '@/api/client'
 import type { SavedRecipe } from '@/types/api'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import Skeleton from '@/components/LoadingSkeleton.vue'
 
 const items = ref<SavedRecipe[]>([])
 const isLoading = ref(true)
@@ -45,7 +46,15 @@ onMounted(load)
   <section>
     <h1>Ska laga</h1>
 
-    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
+    <ul v-if="isLoading" class="grid" aria-hidden="true">
+      <li v-for="n in 6" :key="n" class="tile">
+        <Skeleton class="skeleton-thumb" />
+        <div class="tile-info">
+          <Skeleton class="skeleton-title" />
+          <Skeleton class="skeleton-meta" />
+        </div>
+      </li>
+    </ul>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -83,7 +92,8 @@ onMounted(load)
               aria-label="Ta bort från Ska laga-listan"
               @click="remove(item.recipeId)"
             >
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <LoadingSpinner v-if="removePendingFor === item.recipeId" size="sm" />
+              <svg v-else viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                 <path d="M10 11v6" />
@@ -125,6 +135,23 @@ h1 {
 .tile {
   display: flex;
   flex-direction: column;
+}
+
+.skeleton-thumb {
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.skeleton-title {
+  height: 0.9rem;
+  width: 80%;
+  margin: 0.6rem 0 0.4rem;
+}
+
+.skeleton-meta {
+  height: 0.7rem;
+  width: 55%;
 }
 
 .thumb {

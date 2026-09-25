@@ -5,6 +5,7 @@ import { api, ApiError, resolveImageUrl } from '@/api/client'
 import type { Review, ReviewDetail } from '@/types/api'
 import StarRating from '@/components/StarRating.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import Skeleton from '@/components/LoadingSkeleton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -102,7 +103,16 @@ onMounted(load)
       </svg>
     </RouterLink>
 
-    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
+    <div v-if="isLoading" aria-hidden="true">
+      <Skeleton class="photo" />
+      <Skeleton class="skeleton-heading" />
+      <Skeleton class="skeleton-domain" />
+      <div class="meta-row">
+        <Skeleton class="skeleton-rating" />
+        <Skeleton class="skeleton-byline" />
+      </div>
+      <Skeleton class="skeleton-comment" />
+    </div>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -156,6 +166,7 @@ onMounted(load)
         <template v-else>
           <span class="confirm-text">Ta bort recensionen?</span>
           <button type="button" class="confirm-delete" :disabled="isDeleting" @click="deleteReview">
+            <LoadingSpinner v-if="isDeleting" size="sm" />
             {{ isDeleting ? 'Tar bort …' : 'Ja, ta bort' }}
           </button>
           <button type="button" class="btn-outline" :disabled="isDeleting" @click="isConfirmingDelete = false">
@@ -180,6 +191,7 @@ onMounted(load)
         <p v-if="saveError" class="state error">{{ saveError }}</p>
         <div class="edit-actions">
           <button type="submit" :disabled="editRating < 1 || isSaving">
+            <LoadingSpinner v-if="isSaving" size="sm" />
             {{ isSaving ? 'Sparar …' : 'Spara ändringar' }}
           </button>
           <button type="button" class="btn-outline" :disabled="isSaving" @click="cancelEdit">Avbryt</button>
@@ -260,6 +272,34 @@ onMounted(load)
   color: var(--color-text);
   opacity: 0.6;
   font-size: 0.85rem;
+}
+
+.skeleton-heading {
+  height: 1.75rem;
+  width: 70%;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-domain {
+  height: 0.85rem;
+  width: 30%;
+  margin-bottom: 1.25rem;
+}
+
+.skeleton-rating {
+  height: 1.1rem;
+  width: 6rem;
+}
+
+.skeleton-byline {
+  height: 0.85rem;
+  width: 8rem;
+}
+
+.skeleton-comment {
+  height: 3rem;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 h1 {
@@ -357,6 +397,9 @@ h1 {
 }
 
 .confirm-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: var(--color-danger);
   color: white;
   border: none;
@@ -415,6 +458,9 @@ h1 {
 }
 
 .edit-actions button[type='submit'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: var(--color-accent);
   color: white;
   border: none;

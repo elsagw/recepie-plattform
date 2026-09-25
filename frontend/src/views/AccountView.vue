@@ -5,6 +5,7 @@ import { api, ApiError, resolveImageUrl } from '@/api/client'
 import { useAuth } from '@/composables/useAuth'
 import type { CurrentUser, Friend, SavedRecipe } from '@/types/api'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import Skeleton from '@/components/LoadingSkeleton.vue'
 
 const { currentUser, setCurrentUser } = useAuth()
 
@@ -147,12 +148,38 @@ onMounted(load)
       </div>
       <p v-if="saveError" class="state error">{{ saveError }}</p>
       <div class="edit-actions">
-        <button type="submit" :disabled="isSaving">{{ isSaving ? 'Sparar …' : 'Spara' }}</button>
+        <button type="submit" :disabled="isSaving">
+          <LoadingSpinner v-if="isSaving" size="sm" />
+          {{ isSaving ? 'Sparar …' : 'Spara' }}
+        </button>
         <button type="button" class="btn-outline" :disabled="isSaving" @click="cancelEdit">Avbryt</button>
       </div>
     </form>
 
-    <div v-if="isLoading" class="state"><LoadingSpinner /></div>
+    <template v-if="isLoading">
+      <div class="section" aria-hidden="true">
+        <div class="section-header">
+          <h2>Sparat</h2>
+        </div>
+        <ul class="saved-strip">
+          <li v-for="n in 4" :key="n" class="saved-thumb">
+            <Skeleton class="skeleton-fill" />
+          </li>
+        </ul>
+      </div>
+
+      <div class="section" aria-hidden="true">
+        <div class="section-header">
+          <h2>Följer</h2>
+        </div>
+        <ul class="friend-list">
+          <li v-for="n in 3" :key="n" class="friend-chip">
+            <Skeleton class="skeleton-avatar" />
+            <Skeleton class="skeleton-name-text" />
+          </li>
+        </ul>
+      </div>
+    </template>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -307,6 +334,9 @@ h1 {
 }
 
 .edit-actions button[type='submit'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: var(--color-accent);
   color: white;
   border: none;
@@ -408,6 +438,24 @@ h1 {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.skeleton-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+}
+
+.skeleton-avatar {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-name-text {
+  height: 0.85rem;
+  width: 6rem;
 }
 
 .friend-list {

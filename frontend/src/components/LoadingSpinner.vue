@@ -9,9 +9,10 @@ withDefaults(defineProps<{ size?: 'sm' | 'md' }>(), { size: 'md' })
 <style scoped>
 .spinner {
   display: inline-block;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-heading);
+  border: 3px solid currentColor;
+  border-right-color: transparent;
   border-radius: 50%;
+  opacity: 0.85;
   animation: spin 0.7s linear infinite;
 }
 

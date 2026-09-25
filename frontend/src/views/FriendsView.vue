@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { api, ApiError } from '@/api/client'
 import type { Friend } from '@/types/api'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import Skeleton from '@/components/LoadingSkeleton.vue'
 
 const friends = ref<Friend[]>([])
 const isLoading = ref(true)
@@ -72,13 +73,24 @@ onMounted(load)
       <label for="friend-email">Lägg till kompis (e-post)</label>
       <div class="row">
         <input id="friend-email" v-model="email" type="email" placeholder="namn@example.com" required />
-        <button type="submit" :disabled="isAdding">{{ isAdding ? 'Lägger till …' : 'Lägg till' }}</button>
+        <button type="submit" :disabled="isAdding">
+          <LoadingSpinner v-if="isAdding" size="sm" />
+          {{ isAdding ? 'Lägger till …' : 'Lägg till' }}
+        </button>
       </div>
       <p v-if="addError" class="state error">{{ addError }}</p>
       <p v-if="addSuccess" class="state success">{{ addSuccess }}</p>
     </form>
 
-    <div v-if="isLoading" class="state loading"><LoadingSpinner /></div>
+    <ul v-if="isLoading" class="friend-list" aria-hidden="true">
+      <li v-for="n in 4" :key="n">
+        <div class="skeleton-row-text">
+          <Skeleton class="skeleton-name" />
+          <Skeleton class="skeleton-date" />
+        </div>
+        <Skeleton class="skeleton-button" />
+      </li>
+    </ul>
 
     <div v-else-if="loadError" class="state error">
       <p>{{ loadError }}</p>
@@ -145,6 +157,12 @@ h1 {
   cursor: pointer;
 }
 
+.row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .row button:disabled {
   opacity: 0.6;
   cursor: default;
@@ -152,10 +170,6 @@ h1 {
 
 .state {
   padding: 1rem 0;
-}
-
-.state.loading {
-  text-align: center;
 }
 
 .state.error {
@@ -201,5 +215,27 @@ h1 {
 .remove-button:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.skeleton-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.skeleton-name {
+  height: 0.9rem;
+  width: 8rem;
+}
+
+.skeleton-date {
+  height: 0.7rem;
+  width: 6rem;
+}
+
+.skeleton-button {
+  height: 1.8rem;
+  width: 4.5rem;
+  border-radius: 6px;
 }
 </style>
