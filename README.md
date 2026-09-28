@@ -55,6 +55,26 @@ Frontend startar på `http://localhost:5173`.
 
 Gå till `http://localhost:5173` och logga in med Google.
 
+## Kör hela stacken med Docker
+
+Ett alternativ till stegen ovan — bygger och startar databas, backend och frontend som tre containrar med ett kommando. Kräver bara Docker, inga lokala Java/Node-installationer.
+
+```sh
+cp .env.example .env   # fyll i GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET
+docker compose up -d --build
+```
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8080`
+- Postgres: `localhost:5433` (samma port som i den manuella flödet ovan)
+
+Backend väntar på att databasen är redo (healthcheck) innan den startar, och kör Flyway-migrationerna automatiskt mot den containeriserade databasen — precis som mot den lokala. Uppladdade bilder sparas i en Docker-volym (`uploads_data`) så de överlever en omstart av backend-containern.
+
+```sh
+docker compose down          # stoppa allt
+docker compose logs -f backend   # följ backend-loggarna
+```
+
 ## Testkommandon
 
 ```sh
@@ -69,7 +89,7 @@ cd frontend && npm run type-check  # TypeScript
 - `backend/` — Spring Boot-API (Java 25, Maven)
 - `frontend/` — Vue 3-frontend (TypeScript, Vite)
 - `docs/` — projektplan och arkitekturdokumentation
-- `docker-compose.yml` — lokal PostgreSQL
+- `docker-compose.yml` — hela stacken containeriserad (Postgres, backend, frontend); `backend/Dockerfile` och `frontend/Dockerfile` bygger respektive image
 
 
 Lägg till:

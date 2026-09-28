@@ -13,10 +13,7 @@ beskrivbar — inte bara "det finns en Dockerfile".
 | Java | ✅ Stark, redan verifierad | Hela backend: Spring Boot 4.1.1 på Java 25, Spring Security/OAuth2, JPA, global felhantering |
 | Vue/React | ✅ Vue-erfarenhet, redan verifierad | Vue 3 + TypeScript-frontend, hela flödet (login → scrape → review → feed → save) klart och testat i webbläsare |
 | Automatiserade tester | ⚠️ Delvis — grunden finns, Etapp 6 inte klar | 42 enhetstester finns (`SsrfGuardTest`, `UrlNormalizerTest`, `RecipeMetadataExtractorTest`, `DomainExtractorTest`, `ImageStorageServiceTest`, `ReviewServiceTest`), men inga controller-tester, inga integrationstester mot riktig databas, inga CORS/CSRF-tester, inga frontend-tester |
-| Containerbaserad teknik | ⚠️ Delvis — bara databasen körs containeriserad | `docker-compose.yml` kör Postgres i container, men själva applikationen (backend/frontend) har ingen `Dockerfile` och körs inte containeriserad alls |
-
-De två understa raderna är det som behöver byggas ut för att kunna svara "Ja" med ett
-ärligt, konkret svar i en jobbansökan.
+| Containerbaserad teknik | ✅ Stark, redan verifierad | Multi-stage `Dockerfile` för backend (Maven-byggsteg → slim JRE 25-image, icke-root-användare) och frontend (Node-byggsteg → nginx), `docker-compose.yml` kör hela stacken (Postgres + backend + frontend) med healthcheck-styrd startordning och en namngiven volym för uppladdade bilder |
 
 ## Plan A — Automatiserade tester (täcker Etapp 6 i `docs/PROJECT_PLAN.md`)
 
@@ -55,22 +52,37 @@ metadatakorrigeringar, inga versionsändringar.
 
 ## Plan B — Containerisering
 
-- [ ] `Dockerfile` för backend: multi-stage build (Maven-byggsteg → slim JRE 25
-      runtime-image)
-- [ ] `Dockerfile` för frontend: Node-byggsteg (`npm run build`) → statisk servering
-      (t.ex. nginx)
-- [ ] Utöka `docker-compose.yml` med `backend`- och `frontend`-services, nätverk mellan
-      dem och `postgres`-servicen
-- [ ] Miljövariabler (Google OAuth2-uppgifter, DB-anslutning) via `.env`/`env_file`,
-      inte hårdkodat i compose-filen
-- [ ] Verifiera att hela stacken startar reproducerbart med ett enda `docker compose up`
-- [ ] Dokumentera i `README.md` hur man kör hela stacken containeriserad
+- [x] `Dockerfile` för backend (`backend/Dockerfile`): multi-stage build — steg 1 bygger
+      jar:en med `eclipse-temurin:25-jdk` + Maven wrapper (med cachat dependency-lager),
+      steg 2 kör den på `eclipse-temurin:25-jre` som en icke-root-användare
+- [x] `Dockerfile` för frontend (`frontend/Dockerfile`): steg 1 bygger statiska filer med
+      `node:22-alpine` (`npm run build`, inklusive type-check), steg 2 serverar dem med
+      `nginx:alpine` + en `nginx.conf` med SPA-fallback (`try_files ... /index.html`) så
+      Vue Routers `/feed`-style URL:er funkar på direktladdning
+- [x] `docker-compose.yml` utökad med `backend`- och `frontend`-services. Inget manuellt
+      nätverk behövdes — Compose kopplar ihop services i samma fil automatiskt via
+      tjänstenamn (`postgres`, port 5432 internt). En healthcheck på Postgres gör att
+      backend väntar in en riktigt redo databas innan den startar
+- [x] Miljövariabler (Google-uppgifter, DB-anslutning) läses från `${VAR}` i
+      `docker-compose.yml`, som Compose fyller i automatiskt från `.env` — inget
+      hårdkodat i compose-filen
+- [x] Verifierat med `docker compose up -d --build`: alla tre containrar startar,
+      `GET /api/auth/me` ger `401` med rätt felformat, Flyway migrerar mot
+      `postgres:5432` (det interna nätverksnamnet), frontend serverar `index.html` även
+      på ett direktladdat `/feed`
+- [x] Dokumenterat i `README.md` under "Kör hela stacken med Docker"
 
-**Startpunkt:** backend-`Dockerfile` först — den är mer relevant för Java-frågan i
-ansökan och enklare att verifiera (ett `docker build` + `docker run` mot befintlig
-`docker-compose`-databas).
+**Status: Plan B klar.** Alla checkboxar verifierade med en riktig `docker compose up`, inte
+bara att Dockerfiles skrevs.
+
+**Bra att kunna berätta om i en intervju:** varför `VITE_API_BASE_URL` måste vara ett
+build-arg och inte en vanlig miljövariabel (Vite bakar in den i JS-filerna vid bygget,
+inte vid körning — statiska filer har ingen serverkod som kan läsa env vars senare), och
+varför frontend-imagen pekar på `localhost:8080` för backend medan backend-imagen pekar
+på `postgres:5432` för databasen (webbläsaren respektive backend-containern gör anropen
+från olika nätverk).
 
 ## Nästa steg
 
-Välj Plan A, Plan B, eller båda (i så fall A → B, eftersom automatiserade tester väger
-tyngre i de flesta jobbannonser och är mer omfattande att bygga klart).
+Både Plan A och Plan B är klara. Kvar om du vill gå längre: CI-wiring (köra testsviten
+automatiskt i GitHub Actions vid varje push) och att publicera images till ett register.
