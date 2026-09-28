@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Etapp 0–5 from `docs/PROJECT_PLAN.md` are done: backend (Flyway/datalager, Google OAuth2 auth, external-recipe scraping with SSRF guard, reviews/feed, saved recipes) and now the Vue 3 + TypeScript frontend (`frontend/`) covering the full flow: login, `/feed` with save/unsave, `/add-review` with scrape-preview and review history. Etapp 6 (testing/hardening) has not been started.
+Etapp 0–5 from `docs/PROJECT_PLAN.md` are done: backend (Flyway/datalager, Google OAuth2 auth, external-recipe scraping with SSRF guard, reviews/feed, saved recipes) and now the Vue 3 + TypeScript frontend (`frontend/`) covering the full flow: login, `/feed` with save/unsave, `/add-review` with scrape-preview and review history. Etapp 6 (testing/hardening) is partially done: backend has 100 tests (controller tests, `SecurityConfigTest` for CORS/CSRF/OAuth2, Testcontainers-backed integration tests, a dedicated error-shape test, `RecipeScrapeServiceTest`) and the frontend has 16 Vitest tests covering the main flows (login-gate, scrape-preview, publish, feed, save/unsave) — see `docs/SKILLS_UPGRADE_PLAN.md` for what's tracked/still open (e.g. CI wiring, README test-command docs).
 
 Etapp 5 has been fully verified end-to-end in a real browser: Google login, scrape-preview, viewing past reviews of a recipe before submitting a new one, star-rating input, publishing, the published review appearing correctly in the feed, save/unsave toggling, logout, the `/add-review` login-gate for anonymous users, and a backend error (SSRF block) rendering correctly in the UI.
 
