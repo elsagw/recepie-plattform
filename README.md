@@ -4,7 +4,7 @@ En social receptplattform: klistra in en receptlänk, se en förhandsgranskning,
 
 ## Du behöver
 
-- Java 21
+- Java 25
 - Maven
 - Node **^22.18.0** (använd `nvm use` i `frontend/`, se `frontend/README.md`)
 - Docker (för lokal PostgreSQL)
@@ -66,7 +66,7 @@ cd frontend && npm run type-check  # TypeScript
 
 ## Struktur
 
-- `backend/` — Spring Boot-API (Java 21, Maven)
+- `backend/` — Spring Boot-API (Java 25, Maven)
 - `frontend/` — Vue 3-frontend (TypeScript, Vite)
 - `docs/` — projektplan och arkitekturdokumentation
 - `docker-compose.yml` — lokal PostgreSQL

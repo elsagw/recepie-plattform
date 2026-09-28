@@ -17,7 +17,7 @@ Etapp 5 has been fully verified end-to-end in a real browser: Google login, scra
 
 ## Stack
 
-- Backend (`backend/`, scaffolded): Spring Boot **4.1.1**, Java 21, **Maven**. Dependencies: `spring-boot-starter-webmvc`, `spring-boot-starter-data-jpa`, `spring-boot-starter-security-oauth2-client`, `spring-boot-starter-flyway`, `spring-boot-starter-validation`, PostgreSQL driver, `org.jsoup:jsoup`.
+- Backend (`backend/`, scaffolded): Spring Boot **4.1.1**, Java 25 (LTS), **Maven**. Dependencies: `spring-boot-starter-webmvc`, `spring-boot-starter-data-jpa`, `spring-boot-starter-security-oauth2-client`, `spring-boot-starter-flyway`, `spring-boot-starter-validation`, PostgreSQL driver, `org.jsoup:jsoup`.
 - Frontend (`frontend/`, scaffolded via `create-vue`): Vue 3, TypeScript, Vue Router, ESLint (+oxlint), Vitest. **No Pinia** — auth state is a module-level singleton in `composables/useAuth.ts`; the app is small enough that a store would be pure ceremony. **npm** (not pnpm/yarn).
   - **Requires Node ^22.18.0**, unlike the rest of the stack (backend/tooling assumes Node 20). Use `nvm use` in `frontend/` (reads `.nvmrc`, pinned to `22.23.2`, already installed via nvm on this machine). Running `npm install`/`npm run *` under Node 20 will either fail outright or hit a confusing `npm error Cannot read properties of null (reading 'edgesOut')` from `@npmcli/arborist` — that specific error was actually an old-npm bug (fixed by `npm install -g npm@latest`), not a Node-version error, so don't assume Node is the only thing that can cause it.
 - Local Postgres via `docker-compose.yml`, mapped to host port **5433**, not 5432 (another, unrelated container already used 5432 on this machine — don't "fix" this back to 5432).
