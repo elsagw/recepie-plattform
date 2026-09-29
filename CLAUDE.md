@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git commit/PR conventions
+
+Never add AI attribution lines to commit messages or PR descriptions in this repo — no `Co-Authored-By: Claude ...` trailer, no "Generated with Claude Code" footer, nothing that credits an AI tool. This overrides Claude Code's own default attribution behavior. The repo is a solo-authored student portfolio project; commits should show only the human author.
+
 ## Project status
 
 Etapp 0–5 from `docs/PROJECT_PLAN.md` are done: backend (Flyway/datalager, Google OAuth2 auth, external-recipe scraping with SSRF guard, reviews/feed, saved recipes) and now the Vue 3 + TypeScript frontend (`frontend/`) covering the full flow: login, `/feed` with save/unsave, `/add-review` with scrape-preview and review history. Etapp 6 (testing/hardening) is partially done: backend has 100 tests (controller tests, `SecurityConfigTest` for CORS/CSRF/OAuth2, Testcontainers-backed integration tests, a dedicated error-shape test, `RecipeScrapeServiceTest`) and the frontend has 16 Vitest tests covering the main flows (login-gate, scrape-preview, publish, feed, save/unsave) — see `docs/SKILLS_UPGRADE_PLAN.md` for what's tracked/still open (e.g. CI wiring, README test-command docs).
