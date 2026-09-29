@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      # Matches docker-compose.yml: BackendApplicationTests/SecurityConfigTest connect
+      # to a real Postgres on localhost:5433 (separate from the Testcontainers instance
+      # RepositoryIntegrationTest spins up on its own).
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: receptfeed
+          POSTGRES_USER: receptfeed
+          POSTGRES_PASSWORD: receptfeed
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U receptfeed -d receptfeed"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Run backend tests
+        run: mvn --batch-mode --no-transfer-progress test
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Run frontend tests
+        run: npm run test:unit -- --run
